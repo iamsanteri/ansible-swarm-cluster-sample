@@ -1,0 +1,20 @@
+# roles/docker_stack/templates/stack.yml.j2
+version: '3.8'
+services:
+  web:
+    image: nginx:latest
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    ports:
+      - "80:80"
+    configs:
+      - source: nginx_config_v{{ ansible_date_time.epoch }}
+        target: /usr/share/nginx/html/index.html
+
+configs:
+  nginx_config_v{{ ansible_date_time.epoch }}:
+    file: /tmp/index.html

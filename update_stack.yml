@@ -1,0 +1,44 @@
+# update_stack.yml
+---
+- name: Update Docker Stack
+  hosts: node1
+  become: yes
+  tasks:
+    - name: Create new index.html
+      template:
+        src: roles/docker_stack/templates/index.html.j2
+        dest: /tmp/index.html
+
+    - name: Copy updated stack file
+      template:
+        src: roles/docker_stack/templates/stack.yml.j2
+        dest: /root/stack.yml
+
+    - name: Update stack
+      docker_stack:
+        state: present
+        name: test-web
+        compose:
+          - /root/stack.yml
+      register: stack_result
+
+    - name: Show service details
+      shell: docker service ps test-web_web
+      register: service_details
+      changed_when: false
+
+    - name: Display service details
+      debug:
+        var: service_details.stdout_lines
+
+    - name: Monitor containers
+      shell: "docker service ps test-web_web --no-trunc | grep Running"
+      register: container_status
+      until: container_status.stdout_lines | length >= 3
+      retries: 30
+      delay: 5
+      changed_when: false
+
+    - name: Show final status
+      debug:
+        msg: "Service update completed. Running containers: {{ container_status.stdout_lines | length }}"

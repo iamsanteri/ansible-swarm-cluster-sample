@@ -1,0 +1,38 @@
+# update_nginx.yml
+---
+- name: Update nginx content
+  hosts: nodes
+  become: yes
+  tasks:
+    - name: Create custom index.html
+      copy:
+        dest: /tmp/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head><title>Docker Swarm Test</title></head>
+          <body>
+            <h1>Hello from Docker Swarm!</h1>
+            <p>Container Host IP: {{ ansible_default_ipv4.address }}</p>
+            <p>Container Host: {{ inventory_hostname }}</p>
+          </body>
+          </html>
+
+    - name: Create stack file
+      copy:
+        dest: /tmp/stack.yml
+        content: |
+          version: '3.8'
+          services:
+            web:
+              image: nginx:latest
+              deploy:
+                replicas: 3
+              ports:
+                - "80:80"
+              volumes:
+                - /tmp/index.html:/usr/share/nginx/html/index.html
+
+    - name: Deploy stack
+      command: docker stack deploy -c /tmp/stack.yml test-web
+      when: inventory_hostname == groups['nodes'][0]

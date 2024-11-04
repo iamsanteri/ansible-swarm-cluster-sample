@@ -1,0 +1,13 @@
+# roles/docker_stack/tasks/main.yml
+---
+- name: Copy stack file
+  template:
+    src: stack.yml.j2
+    dest: /root/stack.yml
+  
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: test-web
+    compose:
+      - /root/stack.yml

@@ -1,0 +1,23 @@
+---
+- name: Set up ansible user with sudo privileges
+  hosts: nodes
+  become: yes
+  vars_prompt:
+    - name: "ansible_password"
+      prompt: "Enter password for ansible user"
+      private: yes
+  tasks:
+    - name: Ensure ansible user is present
+      user:
+        name: ansible
+        state: present
+        groups: sudo
+        append: yes
+        create_home: yes
+        password: "{{ ansible_password | password_hash('sha512', 'salt') }}"
+
+    - name: Ensure ansible user has sudo privileges without password
+      copy:
+        dest: /etc/sudoers.d/ansible
+        content: "ansible ALL=(ALL) NOPASSWD:ALL\n"
+        mode: '0440'

@@ -1,0 +1,4 @@
+[nodes]
+node1 ansible_host=37.27.208.198 ansible_user=ansible ansible_become=yes
+node2 ansible_host=135.181.105.140 ansible_user=ansible ansible_become=yes
+node3 ansible_host=95.217.132.32 ansible_user=ansible ansible_become=yes
